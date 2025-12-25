@@ -53,3 +53,10 @@ class TodoDetailAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
+
+    def delete(self,request,pk):
+        todo = self.get_object(pk)
+        if not todo:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        todo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
