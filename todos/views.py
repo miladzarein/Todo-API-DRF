@@ -24,3 +24,12 @@ class TodoListCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
+class TodoDetailAPIView(APIView):
+    """
+    Handle retrieving, updating, or deleting a single Todo object.
+    """
+    def get_object(self,pk):
+        try:
+            return Todo.objects.get(pk=pk)
+        except Todo.DoesNotExist:
+            return None
