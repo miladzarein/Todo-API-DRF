@@ -40,3 +40,16 @@ class TodoDetailAPIView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = TodoSerializer(todo)
         return Response (serializer.data)
+    
+
+
+    def put(self,request,pk):
+        todo = self.get_object(pk)
+        if not todo:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = TodoSerializer(todo,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
