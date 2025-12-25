@@ -33,3 +33,10 @@ class TodoDetailAPIView(APIView):
             return Todo.objects.get(pk=pk)
         except Todo.DoesNotExist:
             return None
+        
+    def get(self,request,pk):
+        todo = self.get_object(pk)
+        if not todo:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = TodoSerializer(todo)
+        return Response (serializer.data)
