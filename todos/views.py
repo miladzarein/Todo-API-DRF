@@ -28,14 +28,14 @@ class TodoDetailAPIView(APIView):
     """
     Handle retrieving, updating, or deleting a single Todo object.
     """
-    def get_object(self,pk):
+    def get_object(self,pk,user):
         try:
-            return Todo.objects.get(pk=pk)
+            return Todo.objects.get(pk=pk,owner=user)
         except Todo.DoesNotExist:
             return None
         
     def get(self,request,pk):
-        todo = self.get_object(pk)
+        todo = self.get_object(pk,request.user)
         if not todo:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = TodoSerializer(todo)
@@ -44,7 +44,7 @@ class TodoDetailAPIView(APIView):
 
 
     def put(self,request,pk):
-        todo = self.get_object(pk)
+        todo = self.get_object(pk,request.user)
         if not todo:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = TodoSerializer(todo,data=request.data)
@@ -55,7 +55,7 @@ class TodoDetailAPIView(APIView):
     
 
     def delete(self,request,pk):
-        todo = self.get_object(pk)
+        todo = self.get_object(pk,request.user)
         if not todo:
             return Response(status=status.HTTP_404_NOT_FOUND)
         todo.delete()
