@@ -3,8 +3,7 @@
 ### Implementing
 - CRUD operations
 - Custom permissions
-
-### Planned
 - JWT authentication
+### Planned
 - Multi-tenant (SaaS)
 - User-based ownership
