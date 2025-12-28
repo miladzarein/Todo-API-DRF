@@ -20,8 +20,9 @@ class TenantSerializer(serializers.ModelSerializer):
 
 class TodoSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username',read_only=True)
+    tenant_name = serializers.CharField(source='tenant.name',read_only=True)
 
     class Meta:
         model = Todo
-        fields = ['id','title','completed','created_at','owner_username']
-        read_only_fields = ['id', 'created_at','owner_username']
+        fields = ['id','title','completed','created_at','owner_username','tenant_name']
+        read_only_fields = ['id', 'created_at','owner_username','tenant_name']
