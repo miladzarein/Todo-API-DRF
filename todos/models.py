@@ -11,6 +11,14 @@ class Tenant(models.Model):
     def __str__(self):
         return self.name
     
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    tenant = models.ForeignKey(Tenant,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username
+    
     
 class Todo(models.Model):
     owner = models.ForeignKey(User,on_delete=models.CASCADE,related_name='todos')
