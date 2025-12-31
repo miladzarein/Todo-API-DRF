@@ -52,9 +52,13 @@ class TodoDetailAPIView(APIView):
 
 
     def put(self,request,pk):
-        todo = self.get_object(pk,request.user)
+        todo = self.get_object(pk)
         if not todo:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        self.check_object_permissions(request, todo)
         serializer = TodoSerializer(todo,data=request.data)
         if serializer.is_valid():
             serializer.save()
