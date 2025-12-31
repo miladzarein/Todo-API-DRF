@@ -3,23 +3,25 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Todo
 from .serializers import TodoSerializer
-from rest_framework.permissions import IsAuthenticated
+from .permissions import IsTenantMember, IsTodoOwner
 
 
 class TodoListCreateAPIView(APIView):
     """List all todos or create a new one."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsTenantMember]
 
     def get(self,request):
-        todos = Todo.objects.filter(owner=request.user)
+        tenant = request.user.userprofile.tenant
+        todos = Todo.objects.filter(tenant=tenant)
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data)
     
 
     def post(self, request):
+        tenant = request.user.userprofile.tenant
         serializer = TodoSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(owner=request.user)
+            serializer.save(owner=request.user,tenant=tenant)
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
