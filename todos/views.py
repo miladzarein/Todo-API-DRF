@@ -27,19 +27,25 @@ class TodoListCreateAPIView(APIView):
     
     
 class TodoDetailAPIView(APIView):
+    permission_classes = [IsTenantMember, IsTodoOwner]
     """
     Handle retrieving, updating, or deleting a single Todo object.
     """
-    def get_object(self,pk,user):
+    def get_object(self,pk):
         try:
-            return Todo.objects.get(pk=pk,owner=user)
+            tenant = self.request.user.userprofile.tenant
+            return Todo.objects.get(pk=pk,tenant=tenant)
         except Todo.DoesNotExist:
             return None
         
     def get(self,request,pk):
-        todo = self.get_object(pk,request.user)
+        todo = self.get_object(pk)
         if not todo:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Not found."},
+                status=status.HTTP_404_NOT_FOUND
+                )
+        self.check_object_permissions(request, todo)
         serializer = TodoSerializer(todo)
         return Response (serializer.data)
     
