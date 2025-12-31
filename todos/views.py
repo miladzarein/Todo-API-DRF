@@ -67,8 +67,12 @@ class TodoDetailAPIView(APIView):
     
 
     def delete(self,request,pk):
-        todo = self.get_object(pk,request.user)
+        todo = self.get_object(pk)
         if not todo:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        self.check_object_permissions(request, todo)
         todo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
