@@ -116,3 +116,15 @@ class UserProfileUpdateAPIView(APIView):
             return Response(serializer.data)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class TenantMembersAPIView(APIView):
+    """
+    API to get all tenant members (Owner only)
+    """
+    permission_classes = [IsOwnerOnly]
+    def get(self, request):
+        tenant = request.user.userprofile.tenant
+        members = UserProfile.objects.filter(tenant=tenant)
+        serializer = UserProfileSerializer(members, many=True)
+        return Response(serializer.data)
