@@ -1,10 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Todo
-from .serializers import TodoSerializer
-from .permissions import IsTenantMember, IsTodoOwner
-
+from .models import Todo,UserProfile
+from .serializers import TodoSerializer,UserProfileSerializer
+from .permissions import IsTenantMember, IsTodoOwner,IsOwnerOrAdmin,IsOwnerOnly
+from django.shortcuts import get_object_or_404
 
 class TodoListCreateAPIView(APIView):
     """List all todos or create a new one."""
@@ -76,3 +76,43 @@ class TodoDetailAPIView(APIView):
         self.check_object_permissions(request, todo)
         todo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class UserProfileUpdateAPIView(APIView):
+    """
+    API for updating user role (only for admin/owner)
+    """
+    permission_classes = [IsOwnerOrAdmin]
+    
+    def put(self, request, user_id):
+        user_profile = get_object_or_404(
+            UserProfile, 
+            user__id=user_id, 
+            tenant=request.user.userprofile.tenant
+        )
+        
+        # User cannot change their own role
+        if user_profile.user == request.user:
+            return Response(
+                {"detail": "You cannot change your own role."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Admin cannot modify owner's role
+        if request.user.userprofile.role == 'admin' and user_profile.role == 'owner':
+            return Response(
+                {"detail": "Admin cannot modify owner's role."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        serializer = UserProfileSerializer(
+            user_profile, 
+            data=request.data, 
+            partial=True
+        )
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
