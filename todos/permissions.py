@@ -26,3 +26,12 @@ class IsOwnerOrAdmin(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
         return request.user.userprofile.role in ['owner', 'admin']
+    
+class IsOwnerOnly(permissions.BasePermission):
+    """
+    Permission to check if user is owner only
+    """
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        return request.user.userprofile.role == 'owner'
