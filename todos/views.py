@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Todo,UserProfile
-from .serializers import TodoSerializer,UserProfileSerializer
+from .serializers import TodoSerializer,UserProfileSerializer,UserSerializer
 from .permissions import IsTenantMember, IsTodoOwner,IsOwnerOrAdmin,IsOwnerOnly
 from django.shortcuts import get_object_or_404
 
@@ -142,3 +142,42 @@ class CurrentTenantAPIView(APIView):
             'tenant_name': tenant.name,
             'owner': tenant.owner.username
         })
+    
+
+class CreateTenantAPIView(APIView):
+    """
+    API for creating a new tenant (registration)
+    """
+    permission_classes = []  # Public access
+
+    def post(self, request):
+        # Create new user
+        user_data = {
+            'username': request.data.get('username'),
+            'password': request.data.get('password'),
+            'email': request.data.get('email', '')
+        }
+        
+        user_serializer = UserSerializer(data=user_data)
+        if not user_serializer.is_valid():
+            return Response(
+                user_serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user = user_serializer.save()
+        user.set_password(user_data['password'])
+        user.save()
+
+        # Update tenant name
+        tenant = user.userprofile.tenant
+        tenant_name = request.data.get('tenant_name', f"Tenant-{user.username}")
+        tenant.name = tenant_name
+        tenant.save()
+
+        return Response({
+            'message': 'Tenant created successfully',
+            'user_id': user.id,
+            'tenant_id': tenant.id,
+            'tenant_name': tenant.name
+        }, status=status.HTTP_201_CREATED)
