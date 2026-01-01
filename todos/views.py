@@ -128,3 +128,17 @@ class TenantMembersAPIView(APIView):
         members = UserProfile.objects.filter(tenant=tenant)
         serializer = UserProfileSerializer(members, many=True)
         return Response(serializer.data)
+    
+
+class CurrentTenantAPIView(APIView):
+    """
+    API to get current tenant data
+    """
+    permission_classes = [IsTenantMember]
+    def get(self, request):
+        tenant = request.user.userprofile.tenant
+        return Response({
+            'tenant_id': tenant.id,
+            'tenant_name': tenant.name,
+            'owner': tenant.owner.username
+        })
