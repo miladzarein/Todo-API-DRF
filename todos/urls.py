@@ -6,6 +6,7 @@ from .views import (
     CurrentTenantAPIView,
     UserProfileUpdateAPIView,
     TenantMembersAPIView,
+    UserProfileAPIView
 )
 
 
@@ -18,4 +19,5 @@ urlpatterns = [
     path('current-tenant/', CurrentTenantAPIView.as_view()),  
     path('members/', TenantMembersAPIView.as_view()),
     path('members/<int:user_id>/role/', UserProfileUpdateAPIView.as_view()),
+    path('auth/me/', UserProfileAPIView.as_view(), name='user_profile'),
 ]
