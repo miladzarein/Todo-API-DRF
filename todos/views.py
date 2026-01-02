@@ -5,11 +5,13 @@ from .models import Todo,UserProfile
 from .serializers import TodoSerializer,UserProfileSerializer,UserSerializer
 from .permissions import IsTenantMember, IsTodoOwner,IsOwnerOrAdmin,IsOwnerOnly
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class TodoListCreateAPIView(APIView):
     """List all todos or create a new one."""
     permission_classes = [IsTenantMember]
-
+    @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self,request):
         tenant = request.user.userprofile.tenant
         todos = Todo.objects.filter(tenant=tenant)
@@ -31,13 +33,14 @@ class TodoDetailAPIView(APIView):
     """
     Handle retrieving, updating, or deleting a single Todo object.
     """
+    @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get_object(self,pk):
         try:
             tenant = self.request.user.userprofile.tenant
             return Todo.objects.get(pk=pk,tenant=tenant)
         except Todo.DoesNotExist:
             return None
-        
+    @swagger_auto_schema(responses={200: TodoSerializer(many=True)})    
     def get(self,request,pk):
         todo = self.get_object(pk)
         if not todo:
@@ -123,6 +126,7 @@ class TenantMembersAPIView(APIView):
     API to get all tenant members (Owner only)
     """
     permission_classes = [IsOwnerOnly]
+    @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         tenant = request.user.userprofile.tenant
         members = UserProfile.objects.filter(tenant=tenant)
@@ -134,7 +138,9 @@ class CurrentTenantAPIView(APIView):
     """
     API to get current tenant data
     """
+    
     permission_classes = [IsTenantMember]
+    @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         tenant = request.user.userprofile.tenant
         return Response({
@@ -189,7 +195,7 @@ class UserProfileAPIView(APIView):
     Returns full profile if exists, otherwise basic user info.
     """
     permission_classes = [IsTenantMember]
-    
+    @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         user = request.user
         try:
