@@ -18,7 +18,7 @@ class TodoListCreateAPIView(APIView):
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data)
     
-
+    @swagger_auto_schema(request_body=TodoSerializer)
     def post(self, request):
         tenant = request.user.userprofile.tenant
         serializer = TodoSerializer(data=request.data)
@@ -53,7 +53,7 @@ class TodoDetailAPIView(APIView):
         return Response (serializer.data)
     
 
-
+    @swagger_auto_schema(request_body=TodoSerializer)
     def put(self,request,pk):
         todo = self.get_object(pk)
         if not todo:
@@ -68,7 +68,7 @@ class TodoDetailAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
-
+    @swagger_auto_schema(request_body=TodoSerializer)
     def delete(self,request,pk):
         todo = self.get_object(pk)
         if not todo:
@@ -86,7 +86,7 @@ class UserProfileUpdateAPIView(APIView):
     API for updating user role (only for admin/owner)
     """
     permission_classes = [IsOwnerOrAdmin]
-    
+    @swagger_auto_schema(request_body=TodoSerializer)
     def put(self, request, user_id):
         user_profile = get_object_or_404(
             UserProfile, 
@@ -155,7 +155,7 @@ class CreateTenantAPIView(APIView):
     API for creating a new tenant (registration)
     """
     permission_classes = []  # Public access
-
+    @swagger_auto_schema(request_body=TodoSerializer)
     def post(self, request):
         # Create new user
         user_data = {
