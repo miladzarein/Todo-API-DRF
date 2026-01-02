@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'todos.apps.TodosConfig',
     'todos',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
