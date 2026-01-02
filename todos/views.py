@@ -181,3 +181,24 @@ class CreateTenantAPIView(APIView):
             'tenant_id': tenant.id,
             'tenant_name': tenant.name
         }, status=status.HTTP_201_CREATED)
+
+
+class UserProfileAPIView(APIView):
+    """
+    API endpoint to retrieve the current user's profile.
+    Returns full profile if exists, otherwise basic user info.
+    """
+    permission_classes = [IsTenantMember]
+    
+    def get(self, request):
+        user = request.user
+        try:
+            user_profile = user.userprofile
+            serializer = UserProfileSerializer(user_profile)
+            return Response(serializer.data)
+        except:
+            return Response({
+                'username': user.username,
+                'email': user.email,
+                'error': 'User profile not found'
+            }, status=400)
