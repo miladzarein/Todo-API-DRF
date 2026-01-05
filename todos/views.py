@@ -7,6 +7,7 @@ from .permissions import IsTenantMember, IsTodoOwner,IsOwnerOrAdmin,IsOwnerOnly
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.core.cache import cache
 
 class TodoListCreateAPIView(APIView):
     """List all todos or create a new one."""
@@ -14,8 +15,16 @@ class TodoListCreateAPIView(APIView):
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self,request):
         tenant = request.user.userprofile.tenant
+        cache_key = f"todos_tenant_{tenant.id}"
+
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data)
+        
         todos = Todo.objects.filter(tenant=tenant)
         serializer = TodoSerializer(todos, many=True)
+
+        cache.set(cache_key, serializer.data, timeout=60)
         return Response(serializer.data)
     
     @swagger_auto_schema(request_body=TodoSerializer)
@@ -24,6 +33,10 @@ class TodoListCreateAPIView(APIView):
         serializer = TodoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(owner=request.user,tenant=tenant)
+            
+            cache_key = f"todos_tenant_{tenant.id}"
+            cache.delete(cache_key)
+            
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
