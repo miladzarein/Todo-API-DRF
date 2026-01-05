@@ -55,6 +55,13 @@ class TodoDetailAPIView(APIView):
             return None
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})    
     def get(self,request,pk):
+        tenant = request.user.userprofile.tenant
+        cache_key = f"todo_{tenant.id}_{pk}"
+
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
+        
         todo = self.get_object(pk)
         if not todo:
             return Response(
@@ -63,6 +70,7 @@ class TodoDetailAPIView(APIView):
                 )
         self.check_object_permissions(request, todo)
         serializer = TodoSerializer(todo)
+        cache.set(cache_key, serializer.data, timeout=120)
         return Response (serializer.data)
     
 
@@ -78,6 +86,11 @@ class TodoDetailAPIView(APIView):
         serializer = TodoSerializer(todo,data=request.data)
         if serializer.is_valid():
             serializer.save()
+
+            tenant_id = request.user.userprofile.tenant.id
+            cache.delete(f"todo_{tenant_id}_{pk}")
+            cache.delete(f"todos_tenant_{tenant_id}")
+
             return Response(serializer.data)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
@@ -91,6 +104,10 @@ class TodoDetailAPIView(APIView):
             )
         self.check_object_permissions(request, todo)
         todo.delete()
+        
+        tenant_id = request.user.userprofile.tenant.id
+        cache.delete(f"todo_{tenant_id}_{pk}")
+        cache.delete(f"todos_tenant_{tenant_id}")
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 
