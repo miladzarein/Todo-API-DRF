@@ -104,7 +104,7 @@ class TodoDetailAPIView(APIView):
             )
         self.check_object_permissions(request, todo)
         todo.delete()
-        
+
         tenant_id = request.user.userprofile.tenant.id
         cache.delete(f"todo_{tenant_id}_{pk}")
         cache.delete(f"todos_tenant_{tenant_id}")
@@ -159,8 +159,15 @@ class TenantMembersAPIView(APIView):
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         tenant = request.user.userprofile.tenant
+        cache_key = f"tenant_members_{tenant.id}"
+
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
         members = UserProfile.objects.filter(tenant=tenant)
         serializer = UserProfileSerializer(members, many=True)
+        cache.set(cache_key, serializer.data, 300)
+        
         return Response(serializer.data)
     
 
