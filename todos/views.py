@@ -202,6 +202,9 @@ class CreateTenantAPIView(APIView):
     API for creating a new tenant (registration)
     """
     permission_classes = []  # Public access
+    
+    throttle_classes = [AnonRateThrottle, ScopedRateThrottle]
+    throttle_scope = 'register'
     @swagger_auto_schema(request_body=TodoSerializer)
     def post(self, request):
         # Create new user
