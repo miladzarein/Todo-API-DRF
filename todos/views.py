@@ -166,6 +166,9 @@ class TenantMembersAPIView(APIView):
     API to get all tenant members (Owner only)
     """
     permission_classes = [IsOwnerOnly]
+    
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'tenant_members'
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         tenant = request.user.userprofile.tenant
