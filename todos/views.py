@@ -123,6 +123,9 @@ class UserProfileUpdateAPIView(APIView):
     API for updating user role (only for admin/owner)
     """
     permission_classes = [IsOwnerOrAdmin]
+    
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'admin_actions'
     @swagger_auto_schema(request_body=TodoSerializer)
     def put(self, request, user_id):
         user_profile = get_object_or_404(

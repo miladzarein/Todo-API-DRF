@@ -144,6 +144,8 @@ REST_FRAMEWORK = {
         'user': '1000/day',
         'register': '10/day',
         'todos': '500/hour', 
+        'tenant_members': '200/hour',
+        'admin_actions': '50/day',
     }
 }
 
