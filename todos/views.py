@@ -51,6 +51,8 @@ class TodoDetailAPIView(APIView):
     """
     Handle retrieving, updating, or deleting a single Todo object.
     """
+    throttle_classes = [UserRateThrottle, ScopedRateThrottle]
+    throttle_scope = 'todos'
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get_object(self,pk):
         try:
