@@ -8,10 +8,15 @@ from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.core.cache import cache
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
+
 
 class TodoListCreateAPIView(APIView):
     """List all todos or create a new one."""
     permission_classes = [IsTenantMember]
+    
+    throttle_classes = [UserRateThrottle, ScopedRateThrottle]
+    throttle_scope = 'todos'
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self,request):
         tenant = request.user.userprofile.tenant
