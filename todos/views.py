@@ -184,6 +184,9 @@ class CurrentTenantAPIView(APIView):
     """
     
     permission_classes = [IsTenantMember]
+    
+    throttle_classes = [AnonRateThrottle, ScopedRateThrottle]
+    throttle_scope = 'register'
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         tenant = request.user.userprofile.tenant
