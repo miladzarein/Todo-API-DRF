@@ -251,6 +251,7 @@ class UserProfileAPIView(APIView):
     Returns full profile if exists, otherwise basic user info.
     """
     permission_classes = [IsTenantMember]
+    throttle_classes = [UserRateThrottle]
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         user = request.user
