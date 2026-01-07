@@ -9,7 +9,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.core.cache import cache
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
-
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import TodoFilter,TenantMemberFilter
 
 class TodoListCreateAPIView(APIView):
     """List all todos or create a new one."""
@@ -17,16 +18,24 @@ class TodoListCreateAPIView(APIView):
     
     throttle_classes = [UserRateThrottle, ScopedRateThrottle]
     throttle_scope = 'todos'
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TodoFilter     
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self,request):
         tenant = request.user.userprofile.tenant
-        cache_key = f"todos_tenant_{tenant.id}"
+        todos = Todo.objects.filter(tenant=tenant)
 
+        filterset = TodoFilter(request.GET, queryset=todos)
+        if filterset.is_valid():
+            todos = filterset.qs
+        else:
+            return Response(filterset.errors, status=400)
+        
+        cache_key = f"todos_tenant_{tenant.id}"
         cached_data = cache.get(cache_key)
         if cached_data:
             return Response(cached_data)
         
-        todos = Todo.objects.filter(tenant=tenant)
         serializer = TodoSerializer(todos, many=True)
 
         cache.set(cache_key, serializer.data, timeout=60)
