@@ -178,15 +178,25 @@ class TenantMembersAPIView(APIView):
     
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'tenant_members'
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TenantMemberFilter
     @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
     def get(self, request):
         tenant = request.user.userprofile.tenant
+        members = UserProfile.objects.filter(tenant=tenant)
+
+        filterset = TenantMemberFilter(request.GET, queryset=members)
+        if filterset.is_valid():
+            members = filterset.qs
+        else:
+            return Response(filterset.errors, status=400) 
+        
         cache_key = f"tenant_members_{tenant.id}"
 
         cached = cache.get(cache_key)
         if cached:
             return Response(cached)
-        members = UserProfile.objects.filter(tenant=tenant)
+        
         serializer = UserProfileSerializer(members, many=True)
         cache.set(cache_key, serializer.data, 300)
         
