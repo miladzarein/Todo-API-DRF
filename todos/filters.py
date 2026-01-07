@@ -13,3 +13,12 @@ class TodoFilter(django_filters.FilterSet):
     class Meta:
         model = Todo
         fields = ['completed']
+
+
+
+class TenantMemberFilter(django_filters.FilterSet):
+    role = django_filters.CharFilter()
+
+    class Meta:
+        model = UserProfile
+        fields = ['role']
