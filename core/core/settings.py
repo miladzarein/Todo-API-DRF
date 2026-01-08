@@ -146,7 +146,10 @@ REST_FRAMEWORK = {
         'todos': '500/hour', 
         'tenant_members': '200/hour',
         'admin_actions': '50/day',
-    }
+    },
+    
+    'DEFAULT_PAGINATION_CLASS': 'todos.pagination.CustomPagination',
+    'PAGE_SIZE': 10,
 }
 
 
