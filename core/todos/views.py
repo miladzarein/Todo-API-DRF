@@ -11,6 +11,7 @@ from django.core.cache import cache
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import TodoFilter,TenantMemberFilter
+from .pagination import CustomPagination
 
 class TodoListCreateAPIView(APIView):
     """List all todos or create a new one."""
@@ -31,15 +32,20 @@ class TodoListCreateAPIView(APIView):
         else:
             return Response(filterset.errors, status=400)
         
-        cache_key = f"todos_tenant_{tenant.id}"
+        query_params = request.GET.urlencode()
+        cache_key = f"todos_tenant_{tenant.id}_{query_params}"
         cached_data = cache.get(cache_key)
         if cached_data:
             return Response(cached_data)
         
-        serializer = TodoSerializer(todos, many=True)
+        paginator = CustomPagination()
+        page_todos = paginator.paginate_queryset(todos, request)
+        serializer = TodoSerializer(page_todos, many=True)
 
-        cache.set(cache_key, serializer.data, timeout=60)
-        return Response(serializer.data)
+        response_data = paginator.get_paginated_response(serializer.data).data
+        cache.set(cache_key, response_data, timeout=60)
+
+        return Response(response_data)
     
     @swagger_auto_schema(request_body=TodoSerializer)
     def post(self, request):
@@ -48,8 +54,7 @@ class TodoListCreateAPIView(APIView):
         if serializer.is_valid():
             serializer.save(owner=request.user,tenant=tenant)
             
-            cache_key = f"todos_tenant_{tenant.id}"
-            cache.delete(cache_key)
+            cache.delete_many(cache.keys(f"todos_tenant_{tenant.id}_*"))
             
             return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
