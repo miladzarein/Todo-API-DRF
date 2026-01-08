@@ -21,7 +21,43 @@ class TodoListCreateAPIView(APIView):
     throttle_scope = 'todos'
     filter_backends = [DjangoFilterBackend]
     filterset_class = TodoFilter     
-    @swagger_auto_schema(responses={200: TodoSerializer(many=True)})
+    @swagger_auto_schema(
+        responses={200: TodoSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter(
+                'page',
+                openapi.IN_QUERY,
+                description="Page number",
+                type=openapi.TYPE_INTEGER,
+                default=1
+            ),
+            openapi.Parameter(
+                'page_size',
+                openapi.IN_QUERY,
+                description="Number of items per page",
+                type=openapi.TYPE_INTEGER,
+                default=10
+            ),
+            openapi.Parameter(
+                'title',
+                openapi.IN_QUERY,
+                description="Filter by title",
+                type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'completed',
+                openapi.IN_QUERY,
+                description="Filter by completed status",
+                type=openapi.TYPE_BOOLEAN
+            ),
+            openapi.Parameter(
+                'owner',
+                openapi.IN_QUERY,
+                description="Filter by owner ID",
+                type=openapi.TYPE_INTEGER
+            )
+        ]
+    )
     def get(self,request):
         tenant = request.user.userprofile.tenant
         todos = Todo.objects.filter(tenant=tenant)
