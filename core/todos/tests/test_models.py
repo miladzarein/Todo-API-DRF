@@ -59,3 +59,21 @@ def test_todo_str():
     )
 
     assert str(todo) == "My Todo"
+
+@pytest.mark.django_db
+def test_todo_completed():
+    """Test marking todo as completed"""
+    user = User.objects.create_user(username="user3")
+    tenant = user.userprofile.tenant
+
+    todo = Todo.objects.create(
+        title="Complete Me",
+        owner=user,
+        tenant=tenant,
+    )
+
+    todo.completed = True
+    todo.save()
+    todo.refresh_from_db()
+
+    assert todo.completed is True
