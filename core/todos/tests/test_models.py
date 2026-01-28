@@ -21,3 +21,26 @@ def test_user_str():
     """Test user string representation"""
     user = User.objects.create_user(username="user1")
     assert str(user) == "user1"
+
+@pytest.mark.django_db
+def test_create_todo():
+    """Test creating a todo"""
+    # Create user (signals will create profile and tenant)
+    user = User.objects.create_user(
+        username="todoowner",
+        password="pass123",
+    )
+
+    # Get tenant created by signal
+    tenant = user.userprofile.tenant
+
+    todo = Todo.objects.create(
+        title="Test Todo",
+        owner=user,
+        tenant=tenant,
+    )
+
+    assert todo.title == "Test Todo"
+    assert todo.owner == user
+    assert todo.tenant == tenant
+    assert todo.completed is False
