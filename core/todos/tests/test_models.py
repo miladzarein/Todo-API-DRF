@@ -44,3 +44,18 @@ def test_create_todo():
     assert todo.owner == user
     assert todo.tenant == tenant
     assert todo.completed is False
+
+
+@pytest.mark.django_db
+def test_todo_str():
+    """Test todo string representation"""
+    user = User.objects.create_user(username="user2")
+    tenant = user.userprofile.tenant
+
+    todo = Todo.objects.create(
+        title="My Todo",
+        owner=user,
+        tenant=tenant,
+    )
+
+    assert str(todo) == "My Todo"
