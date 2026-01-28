@@ -77,3 +77,18 @@ def test_todo_completed():
     todo.refresh_from_db()
 
     assert todo.completed is True
+
+
+@pytest.mark.django_db
+def test_todo_created_at():
+    """Test todo has created_at timestamp"""
+    user = User.objects.create_user(username="user4")
+    tenant = user.userprofile.tenant
+
+    todo = Todo.objects.create(
+        title="New Todo",
+        owner=user,
+        tenant=tenant,
+    )
+
+    assert todo.created_at is not None
