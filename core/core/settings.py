@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'todos.apps.TodosConfig',
     'todos',
     'drf_yasg',
 ]
