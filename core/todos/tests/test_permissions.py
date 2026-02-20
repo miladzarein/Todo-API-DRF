@@ -94,3 +94,15 @@ def test_password_hashing():
     assert user.password != "plaintextpassword"
     assert user.check_password("plaintextpassword") is True
     assert user.check_password("wrongpassword") is False
+
+
+
+
+@pytest.mark.django_db
+def test_default_user_permissions():
+    """Regular users should not be staff or superuser by default"""
+    user = User.objects.create_user(username="regularuser")
+
+    assert user.is_staff is False
+    assert user.is_superuser is False
+    assert user.is_active is True
