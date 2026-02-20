@@ -57,3 +57,27 @@ def test_todo_ownership():
     assert owner_todo.owner == owner
     assert other_todo.owner == other_user
     assert owner_todo.owner != other_todo.owner
+
+
+@pytest.mark.django_db
+def test_todo_tenant_separation():
+    """Todos should be separated by tenant"""
+    owner = User.objects.create_user(username="owner2", password="pass123")
+    other_user = User.objects.create_user(username="other2", password="pass123")
+
+    owner_tenant = owner.userprofile.tenant
+    other_tenant = other_user.userprofile.tenant
+
+    owner_todo = Todo.objects.create(
+        title="Owner Todo",
+        owner=owner,
+        tenant=owner_tenant,
+    )
+
+    other_todo = Todo.objects.create(
+        title="Other Todo",
+        owner=other_user,
+        tenant=other_tenant,
+    )
+
+    assert owner_todo.tenant != other_todo.tenant
