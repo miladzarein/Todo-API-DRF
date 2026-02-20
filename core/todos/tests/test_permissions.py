@@ -81,3 +81,16 @@ def test_todo_tenant_separation():
     )
 
     assert owner_todo.tenant != other_todo.tenant
+
+
+@pytest.mark.django_db
+def test_password_hashing():
+    """Passwords should be hashed and verifiable"""
+    user = User.objects.create_user(
+        username="securityuser",
+        password="plaintextpassword",
+    )
+
+    assert user.password != "plaintextpassword"
+    assert user.check_password("plaintextpassword") is True
+    assert user.check_password("wrongpassword") is False
