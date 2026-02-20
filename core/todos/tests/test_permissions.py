@@ -17,3 +17,17 @@ def test_is_tenant_member_authenticated():
 
     assert request.user.is_authenticated is True
     assert permission.has_permission(request, None) is True
+
+
+
+@pytest.mark.django_db
+def test_is_tenant_member_anonymous():
+    """Anonymous users should NOT have permission"""
+    factory = RequestFactory()
+
+    permission = IsTenantMember()
+    request = factory.get("/")
+    request.user = AnonymousUser()
+
+    assert request.user.is_authenticated is False
+    assert permission.has_permission(request, None) is False
