@@ -80,3 +80,23 @@ class TestTodoSerializer:
         serializer = TodoSerializer(data=invalid_data)
         assert serializer.is_valid() is False
         assert 'title' in serializer.errors
+    
+    def test_todo_serializer_read_only_fields(self):
+        """Test read-only fields in TodoSerializer"""
+        user = User.objects.create_user(username='readonlyuser')
+        tenant = user.userprofile.tenant
+        
+        todo = Todo.objects.create(
+            title='Read Only Test',
+            owner=user,
+            tenant=tenant
+        )
+        
+        serializer = TodoSerializer(todo)
+        data = serializer.data
+        
+        # These should be read-only
+        assert 'owner_username' in data
+        assert 'tenant_name' in data
+        assert 'created_at' in data
+        assert 'id' in data
