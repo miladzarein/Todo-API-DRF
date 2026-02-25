@@ -68,4 +68,15 @@ class TestTodoSerializer:
         assert data['completed'] is False
         assert 'created_at' in data
 
-    
+    def test_todo_serializer_validation(self):
+        """Test TodoSerializer validation"""
+        # Valid data
+        valid_data = {'title': 'Valid Todo'}
+        serializer = TodoSerializer(data=valid_data)
+        assert serializer.is_valid() is True
+        
+        # Invalid data - empty title
+        invalid_data = {'title': ''}
+        serializer = TodoSerializer(data=invalid_data)
+        assert serializer.is_valid() is False
+        assert 'title' in serializer.errors
